@@ -28,25 +28,32 @@ public class Main {
                 .count();
         System.out.println("несоврешеннолетних " + countNonAdult);
 
-        long countСonscript = persons.stream()
+        Collection<String> conscripts = persons.stream()
                 .filter(person -> person.getAge() >= 18 && person.getAge() <= 27)
                 .filter(person -> person.getSex() == Sex.MAN)
-                .count();
-        System.out.println("призыников " + countСonscript);
+                .map(person -> person.getFamily())
+                .distinct()
+                .toList();
+        System.out.println("призыники: ");
+        conscripts.stream()
+                .forEach(System.out::println);
 
-        Predicate<Person> workableHigher = Person -> {
+
+        Predicate<Person> workable = Person -> {
             Sex sex = Person.getSex();
             Integer age = Person.getAge();
-            Education education = Person.getEducation();
-            if (education != Education.HIGHER) return false;
             if (age < 18) return false;
             if ((sex == Sex.MAN) && (age <= 65)) return true;
             if ((sex == Sex.WOMAN) && (age <= 60)) return true;
             return false;
         }; // сделал так, потому что иначе нечитаемо
+        Predicate<Person> higher = Person -> Person.getEducation() == Education.HIGHER;
+        // сделал так, чтобы выполнить логический   оператор над предикатом
+
+        Predicate<Person> workableHigher = workable.and(higher);
 
         Collection<Person> workablesHigher = persons.stream()
-                .filter(workableHigher::test)
+                .filter(workableHigher)
                 .sorted(Person::compareTo) // не совсем по заданию, надеюсь, так можно?
                 .collect(Collectors.toList());
 
